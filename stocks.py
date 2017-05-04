@@ -64,7 +64,7 @@ def historical_data(arguments):
         data["Elements"].append({
             "Symbol" : stock,
             "Type" : arguments["data_type"],
-            "Params" : ["".join(i for i in arguments["data_param"])],
+            "Params" : [arguments["data_param"]],
         })
     if arguments["start_date"] is not None:
         data["StartDate"] = arguments["start_date"]
