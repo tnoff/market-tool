@@ -44,4 +44,7 @@ class TestStocks(unittest.TestCase):
         httpretty.register_uri(httpretty.GET, url,
                                body=json.dumps(historical.DATA))
         data = stocks.historical_data(False, 'Day', ['xyz'], 'price', 'c', number_of_days=10)
-        self.assertEqual(data, historical.DATA)
+        test_data = historical.DATA
+        test_data.pop("Positions", None)
+        test_data.pop("Labels", None)
+        self.assertEqual(data, test_data)
