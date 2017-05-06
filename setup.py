@@ -7,6 +7,8 @@ setuptools.setup(
     author_email='tylernorth18@gmail.com',
     install_requires=[
         'requests >= 2.13.0',
+        'httpretty >= 0.8.14',
+        'nose >= 1.3.7',
     ],
     entry_points={
         'console_scripts' : [
