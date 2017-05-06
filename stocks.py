@@ -44,45 +44,64 @@ def parse_args():
 
     return vars(p.parse_args())
 
-def lookup_resource(arguments):
-    url = "%sjson?input=%s" % (LOOKUP_URL, arguments["stock"])
+def lookup_resource(stock_symbol):
+    url = "%sjson?input=%s" % (LOOKUP_URL, stock_symbol)
     req = requests.get(url)
     return json.loads(req.text)
 
-def current_quote(arguments):
-    url = "%sjson?symbol=%s" % (QUOTE_URL, arguments["stock_symbol"])
+def _lookup_resource(arguments):
+    return lookup_resource(arguments["stock"])
+
+def current_quote(stock_symbol):
+    url = "%sjson?symbol=%s" % (QUOTE_URL, stock_symbol)
     req = requests.get(url)
     return json.loads(req.text)
 
-def historical_data(arguments):
+def _current_quote(arguments):
+    return current_quote(arguments["stock_symbol"])
+
+def historical_data(normalized, data_period, stock_symbols, data_type, data_param,
+                    start_date=None, end_date=None, end_day_offset=None,
+                    number_of_days=None):
     data = {
-        "Normalized" : arguments["normalized"],
-        "DataPeriod" : arguments["data_period"],
+        "Normalized" : normalized,
+        "DataPeriod" : data_period,
         "Elements" : [],
     }
-    for stock in arguments["symbols"]:
+    for stock in stock_symbols:
         data["Elements"].append({
             "Symbol" : stock,
-            "Type" : arguments["data_type"],
-            "Params" : [arguments["data_param"]],
+            "Type" : data_type,
+            "Params" : [data_param],
         })
-    if arguments["start_date"] is not None:
-        data["StartDate"] = arguments["start_date"]
-    if arguments["end_date"] is not None:
-        data["EndDate"] = arguments["end_date"]
-    if arguments["end_day_offset"] is not None:
-        data["EndOffsetDays"] = arguments["end_day_offset"]
-    if arguments["number_of_days"] is not None:
-        data["NumberOfDays"] = arguments["number_of_days"]
+    optional_args = {
+        'StartDate' : start_date,
+        'EndDate' : end_date,
+        'EndOffsetDays' : end_day_offset,
+        'NumberOfDays' : number_of_days,
+    }
+    for key, value in optional_args.items():
+        if value is not None:
+            data[key] = value
 
     url = "%sjson?parameters=%s" % (HISTORICAL_URL, json.dumps(data))
     req = requests.get(url)
     return json.loads(req.text)
 
+def _historical_data(arguments):
+    return historical_data(arguments["normalized"],
+                           arguments["data_period"],
+                           arguments["symbols"],
+                           arguments["data_type"],
+                           arguments["data_param"],
+                           start_date=arguments["start_date"],
+                           end_date=arguments["end_date"],
+                           end_day_offset=arguments["end_day_offset"],
+                           number_of_days=arguments["number_of_days"])
 COMMAND_HASH = {
-    "lookup" : lookup_resource,
+    "lookup" : _lookup_resource,
     "quote" : current_quote,
-    "historical" : historical_data,
+    "historical" : _historical_data,
 }
 
 def main():
