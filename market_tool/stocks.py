@@ -3,11 +3,7 @@ import json
 
 import requests
 
-BASE_URL = "http://dev.markitondemand.com/Api/v2/"
-LOOKUP_URL = "%sLookup/" % BASE_URL
-QUOTE_URL = "%sQuote/" % BASE_URL
-HISTORICAL_URL = '%sInteractiveChart/' % BASE_URL
-
+from market_tool import urls
 
 def parse_args():
     p = argparse.ArgumentParser(description="Stock API Interface")
@@ -45,7 +41,7 @@ def parse_args():
     return vars(p.parse_args())
 
 def lookup_resource(stock_symbol):
-    url = "%sjson?input=%s" % (LOOKUP_URL, stock_symbol)
+    url = "%sjson?input=%s" % (urls.STOCK_LOOKUP_URL, stock_symbol)
     req = requests.get(url)
     return json.loads(req.text)
 
@@ -53,7 +49,7 @@ def _lookup_resource(arguments):
     return lookup_resource(arguments["stock"])
 
 def current_quote(stock_symbol):
-    url = "%sjson?symbol=%s" % (QUOTE_URL, stock_symbol)
+    url = "%sjson?symbol=%s" % (urls.STOCK_QUOTE_URL, stock_symbol)
     req = requests.get(url)
     return json.loads(req.text)
 
@@ -84,7 +80,7 @@ def historical_data(normalized, data_period, stock_symbols, data_type, data_para
         if value is not None:
             data[key] = value
 
-    url = "%sjson?parameters=%s" % (HISTORICAL_URL, json.dumps(data))
+    url = "%sjson?parameters=%s" % (urls.STOCK_HISTORICAL_URL, json.dumps(data))
     req = requests.get(url)
     return json.loads(req.text)
 
