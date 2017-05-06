@@ -83,14 +83,14 @@ def historical_data(normalized, data_period, stock_symbols, data_type, data_para
     url = "%sjson?parameters=%s" % (urls.STOCK_HISTORICAL_URL, json.dumps(data))
     req = requests.get(url)
 
-    historical_data = json.loads(req.text)
+    hist_data = json.loads(req.text)
 
     # Data returned meant to be used directly for graphing
     # Dont care about key/values specifically for graphing
-    historical_data.pop("Positions", None)
-    historical_data.pop("Labels", None)
+    hist_data.pop("Positions", None)
+    hist_data.pop("Labels", None)
 
-    return historical_data
+    return hist_data
 
 def _historical_data(arguments):
     return historical_data(arguments["normalized"],
