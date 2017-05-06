@@ -40,18 +40,24 @@ def parse_args():
 
     return vars(p.parse_args())
 
+def _make_request(url):
+    req = requests.get(url)
+    data = json.loads(req.text)
+    if isinstance(data, dict):
+        if data.has_key("ExceptionType"):
+            return False, data["Message"]
+    return True, data
+
 def lookup_resource(stock_symbol):
     url = "%sjson?input=%s" % (urls.STOCK_LOOKUP_URL, stock_symbol)
-    req = requests.get(url)
-    return json.loads(req.text)
+    return _make_request(url)
 
 def _lookup_resource(arguments):
     return lookup_resource(arguments["stock"])
 
 def current_quote(stock_symbol):
     url = "%sjson?symbol=%s" % (urls.STOCK_QUOTE_URL, stock_symbol)
-    req = requests.get(url)
-    return json.loads(req.text)
+    return _make_request(url)
 
 def _current_quote(arguments):
     return current_quote(arguments["stock_symbol"])
@@ -81,16 +87,16 @@ def historical_data(normalized, data_period, stock_symbols, data_type, data_para
             data[key] = value
 
     url = "%sjson?parameters=%s" % (urls.STOCK_HISTORICAL_URL, json.dumps(data))
-    req = requests.get(url)
-
-    hist_data = json.loads(req.text)
+    code, hist_data = _make_request(url)
+    if code is False:
+        return code, hist_data
 
     # Data returned meant to be used directly for graphing
     # Dont care about key/values specifically for graphing
     hist_data.pop("Positions", None)
     hist_data.pop("Labels", None)
 
-    return hist_data
+    return True, hist_data
 
 def _historical_data(arguments):
     return historical_data(arguments["normalized"],
@@ -111,7 +117,12 @@ COMMAND_HASH = {
 def main():
     args = parse_args()
     method = COMMAND_HASH[args["module"]]
-    print json.dumps(method(args), indent=4)
+    code, value = method(args)
+    if code is True:
+        print json.dumps(method(args), indent=4)
+    else:
+        print "Failed"
+        print value
 
 if __name__ == '__main__':
     main()
