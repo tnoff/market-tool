@@ -11,8 +11,9 @@ setuptools.setup(
     entry_points={
         'console_scripts' : [
             'stocks = market_tool.stocks:main',
+            'stocks-database = market_tool.database:main',
         ],
     },
     packages=setuptools.find_packages(exclude=['tests']),
-    version='0.0.1',
+    version='0.0.2',
 )

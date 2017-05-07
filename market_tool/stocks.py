@@ -96,6 +96,16 @@ def historical_data(normalized, data_period, stock_symbols, data_type, data_para
     hist_data.pop("Positions", None)
     hist_data.pop("Labels", None)
 
+    # Make sure number of dates returned matches length
+    # of price
+    # TODO this bit isnt tested yet
+    total_dates = len(hist_data["Dates"])
+    for element in hist_data["Elements"]:
+        for _, data_values in element["DataSeries"].items():
+            if len(data_values["values"]) != total_dates:
+                return False, "Element %s has values length:%s that doesnt match date length:%s" % (element["Symbol"], len(data_values["values"]),
+                                                                                                    total_dates)
+
     return True, hist_data
 
 def _historical_data(arguments):
