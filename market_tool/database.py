@@ -1,5 +1,6 @@
 import datetime
 
+from jsonschema import validate
 from sqlalchemy import create_engine
 from sqlalchemy import desc
 from sqlalchemy import Column, Date, Float, ForeignKey, Integer, String, UniqueConstraint
@@ -11,6 +12,41 @@ from market_tool import stocks
 
 DATETIME_INPUT_FORMAT = '%Y-%m-%d'
 DATETIME_OUTPUT_FORMAT = '%Y-%m-%d'
+
+DATABASE_SCHEMA = {
+    'type' : 'object',
+    'properties' : {
+        'connection_type' : {
+            'type' : 'string',
+        },
+        'database_file' : {
+            'type' : ['string', 'null'],
+        },
+        'username' : {
+            'type' : ['string', 'null'],
+        },
+        'password' : {
+            'type' : ['string', 'null'],
+        },
+        'host' : {
+            'type' : ['string', 'null'],
+        },
+        'database_name' : {
+            'type' : ['string', 'null'],
+        },
+    },
+    'required' : ['connection_type'],
+    'oneOf' : [
+        {
+            'required' : ['database_file'],
+        },
+        {
+            'required' : ['username', 'password',
+                          'host', 'database_name'],
+        },
+    ],
+}
+
 
 # Set up tables for database
 BASE = declarative_base()
@@ -55,20 +91,33 @@ class StockPrice(BASE):
 
 
 class StockDatabase(object):
-    def __init__(self, database_file=None):
-        if database_file is None:
-            engine = create_engine('sqlite:///', encoding='utf-8')
-        else:
-            engine = create_engine('sqlite:///%s' % database_file, encoding='utf-8')
+    def __init__(self, database_dict):
+        '''
+        Stock Database interface
+        database_dict       :       Dict data for database connection, must match schema
+        '''
+        validate(database_dict, DATABASE_SCHEMA)
+
+        if database_dict['connection_type'] == 'sqlite':
+            if database_dict['database_file'] is None:
+                engine = create_engine('sqlite:///', encoding='utf-8')
+            else:
+                engine = create_engine('sqlite:///%s' % database_dict['database_file'], encoding='utf-8')
+        elif database_dict['connection_type'] == 'mysql':
+            engine = create_engine('mysql+pymysql://%s:%s@%s/%s' % (database_dict['username'],
+                                                                    database_dict['password'],
+                                                                    database_dict['host'],
+                                                                    database_dict['database_name'],))
+
         BASE.metadata.create_all(engine)
         BASE.metadata.bind = engine
         self.db_session = sessionmaker(bind=engine)()
 
     def __ensure_stock(self, stock_symbol):
         stock = self.db_session.query(Stock).\
-                filter(Stock.stock_symbol == stock_symbol).first()
+                filter(Stock.stock_symbol == stock_symbol.lower()).first()
         if stock is None:
-            stock = Stock(stock_symbol=stock_symbol)
+            stock = Stock(stock_symbol=stock_symbol.lower())
             self.db_session.add(stock)
             self.db_session.commit()
         return stock.id

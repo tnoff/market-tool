@@ -29,7 +29,7 @@ def historical_data(stock_symbol, start_date, end_date, source="google"):
         raise MarketToolException("Invalid start date type:%s" % end_date)
 
     try:
-        data = pandas_datareader.data.DataReader(stock_symbol, source, start_date, end_date)
+        data = pandas_datareader.data.DataReader(stock_symbol.lower(), source, start_date, end_date)
     except pandas_datareader._utils.RemoteDataError:
         return []
 

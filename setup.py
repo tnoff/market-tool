@@ -6,8 +6,10 @@ setuptools.setup(
     author='Tyler D. North',
     author_email='tylernorth18@gmail.com',
     install_requires=[
+        'jsonschema >= 2.6.0',
         'pandas == 0.19.2',
         'pandas-datareader >= 0.3.0',
+        'PyMySQL >= 0.7.11',
         'SQLAlchemy >= 1.1.9',
     ],
     entry_points={

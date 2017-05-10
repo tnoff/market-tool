@@ -30,7 +30,12 @@ class TestDatabase(unittest.TestCase):
                                 utils.PandaStockMock(high, low, openy, close, volume)))
         instance.iterrows.return_value = fake_values
 
-        db = StockDatabase()
+        db_schema = {
+            'connection_type' : 'sqlite',
+            'database_file' : None,
+        }
+
+        db = StockDatabase(db_schema)
         db.stock_update(symbol, start, end)
         # Run twice to check for integrity errors
         db.stock_update(symbol, start, end)
