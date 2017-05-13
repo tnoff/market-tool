@@ -142,33 +142,21 @@ class StockDatabase(object):
                         self.db_session.rollback()
 
     def stock_get_prices(self, stock_symbol):
-        query = self.db_session.query(StockPrice, Stock).join(Stock).\
-                filter(Stock.stock_symbol == stock_symbol).\
-                order_by(desc(StockPrice.date))
-        stock_obj = None
+        stock_query, exchange_query = self.db_session.query(Stock, Exchange).join(Exchange).\
+                filter(Stock.stock_symbol == stock_symbol).first()
+        if stock_query is None:
+            return None, None
+        stock_obj = stock_query.as_dict(OUTPUT_DATETIME_FORMAT)
+        stock_obj['exchange'] = exchange_query.name
 
-        # keep a cache for currency
-        currency_cache = dict()
+        query = self.db_session.query(StockPrice, Currency).join(Currency).\
+                filter(StockPrice.stock_id == stock_query.id).\
+                order_by(desc(StockPrice.date))
 
         prices = []
-        for stock_price, stock in query:
+        for stock_price, currency in query:
             price = stock_price.as_dict(OUTPUT_DATETIME_FORMAT)
-            price.pop('stock_id')
-            if stock_obj is None:
-                stock_obj = stock.as_dict(OUTPUT_DATETIME_FORMAT)
-                exchange_id = stock_obj.pop('exchange_id')
-                exchange = self.db_session.query(Exchange).get(exchange_id)
-                stock_obj['exchange'] = exchange.as_dict(OUTPUT_DATETIME_FORMAT).pop('name')
-
-            currency_id = price.pop('currency_id')
-            try:
-                price['currency'] = currency_cache[currency_id]
-            except KeyError:
-                currency = self.db_session.query(Currency).get(currency_id)
-                currency = currency.as_dict(OUTPUT_DATETIME_FORMAT).pop('name')
-                currency_cache[currency_id] = currency
-                price['currency'] = currency
-
+            price['currency'] = currency.name
             prices.append(price)
         return stock_obj, prices
 
@@ -186,7 +174,6 @@ def parse_args():
 
     prices = sub.add_parser("prices", help="List stock prices")
     prices.add_argument("stock_symbol", help="Stock symbol whose prices to show")
-
 
     return vars(p.parse_args())
 

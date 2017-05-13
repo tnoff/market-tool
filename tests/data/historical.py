@@ -26,7 +26,7 @@ DATA = {
     "Labels": None,
     "Elements": [
         {
-            "Currency": "USD",
+            "Currency": "Bottle Caps",
             "Symbol": "XYZ",
             "Type": "price",
             "DataSeries": {

@@ -36,7 +36,10 @@ class TestDatabase(unittest.TestCase):
 
         stock, prices = database.stock_get_prices("xyz")
         self.assertEqual(len(prices), 10)
+        for price in prices:
+            self.assertEqual(price['currency'], 'bottle caps')
         self.assertEqual(stock['stock_symbol'], 'xyz')
+        self.assertEqual(stock['exchange'], 'nasdaq')
 
         # Run update again to check for integrity errors
         url = "%sjson?parameters=%s" % (urls.STOCK_HISTORICAL_URL, json.dumps(data))
