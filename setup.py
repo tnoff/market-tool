@@ -7,6 +7,7 @@ setuptools.setup(
     author_email='tylernorth18@gmail.com',
     install_requires=[
         'requests >= 2.13.0',
+        'SQLAlchemy >= 1.1.9',
     ],
     entry_points={
         'console_scripts' : [
@@ -15,5 +16,5 @@ setuptools.setup(
         ],
     },
     packages=setuptools.find_packages(exclude=['tests']),
-    version='0.0.2',
+    version='0.0.3',
 )
