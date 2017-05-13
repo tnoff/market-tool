@@ -1,52 +1,38 @@
-import json
+from datetime import datetime
+import random
 import unittest
 
-import httpretty
+import mock
 
-from market_tool import urls
 from market_tool.database import StockDatabase
+from tests import utils
 
-from tests.data import historical, lookup
 
 class TestDatabase(unittest.TestCase):
+    @mock.patch("pandas_datareader.data.DataReader")
+    def test_historical(self, mock_datareader):
+        start = datetime(2017, 5, 8)
+        end = datetime(2017, 5, 12)
+        instance = mock_datareader.return_value
 
-    @httpretty.activate
-    def test_historical(self):
-        data = {
-            'Normalized' : False,
-            'DataPeriod' : 'Day',
-            'Elements' : [
-                {
-                    'Symbol' : 'XYZ',
-                    'Type' : 'price',
-                    'Params' : ['c'],
-                },
-            ],
-            'NumberOfDays' : 10,
-        }
-        url = "%sjson?parameters=%s" % (urls.STOCK_HISTORICAL_URL, json.dumps(data))
-        httpretty.register_uri(httpretty.GET, url,
-                               body=json.dumps(historical.DATA))
-        symbol = "xyz"
-        url = "%sjson?input=%s" % (urls.STOCK_LOOKUP_URL, symbol)
-        httpretty.register_uri(httpretty.GET, url,
-                               body=json.dumps(lookup.DATA))
-        database = StockDatabase()
-        database.stock_update(10, ["xyz"])
+        symbol = utils.random_string()
 
-        stock, prices = database.stock_get_prices("xyz")
+
+        fake_values = []
+        for _ in range(10):
+            high = random.uniform(2.5, 10.2)
+            low = random.uniform(1.7, 22.4)
+            openy = random.uniform(22.1, 92.7)
+            close = random.uniform(102.3, 107.4)
+            volume = random.randint(0, 100)
+            date = utils.random_date(datetime(2014, 1, 1), datetime(2015, 1, 1))
+            fake_values.append((utils.PandasDatetimeMock(date.strftime('%Y-%m-%d')),
+                                utils.PandaStockMock(high, low, openy, close, volume)))
+        instance.iterrows.return_value = fake_values
+
+        db = StockDatabase()
+        db.stock_update(symbol, start, end)
+        # Run twice to check for integrity errors
+        db.stock_update(symbol, start, end)
+        prices = db.stock_show(symbol)
         self.assertEqual(len(prices), 10)
-        for price in prices:
-            self.assertEqual(price['currency'], 'bottle caps')
-        self.assertEqual(stock['stock_symbol'], 'xyz')
-        self.assertEqual(stock['exchange'], 'nasdaq')
-
-        # Run update again to check for integrity errors
-        url = "%sjson?parameters=%s" % (urls.STOCK_HISTORICAL_URL, json.dumps(data))
-        httpretty.register_uri(httpretty.GET, url,
-                               body=json.dumps(historical.DATA))
-        symbol = "xyz"
-        url = "%sjson?input=%s" % (urls.STOCK_LOOKUP_URL, symbol)
-        httpretty.register_uri(httpretty.GET, url,
-                               body=json.dumps(lookup.DATA))
-        database.stock_update(10, ["xyz"])

@@ -1,0 +1,2 @@
+class MarketToolException(Exception):
+    pass

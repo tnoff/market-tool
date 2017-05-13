@@ -6,13 +6,12 @@ setuptools.setup(
     author='Tyler D. North',
     author_email='tylernorth18@gmail.com',
     install_requires=[
-        'requests >= 2.13.0',
+        'pandas == 0.19.2',
+        'pandas-datareader >= 0.3.0',
         'SQLAlchemy >= 1.1.9',
     ],
     entry_points={
         'console_scripts' : [
-            'stocks = market_tool.stocks:main',
-            'stocks-database = market_tool.database:main',
         ],
     },
     packages=setuptools.find_packages(exclude=['tests']),

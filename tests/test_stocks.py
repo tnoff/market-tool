@@ -1,73 +1,38 @@
-import json
+from datetime import datetime
+import random
 import unittest
 
-import httpretty
+import mock
 
-from market_tool import stocks, urls
+from market_tool import stocks
+from tests import utils
 
-from tests.data import historical, historical_fail, lookup, quote
 
 class TestStocks(unittest.TestCase):
-    @httpretty.activate
-    def test_lookup(self):
-        symbol = "xyz"
-        url = "%sjson?input=%s" % (urls.STOCK_LOOKUP_URL, symbol)
-        httpretty.register_uri(httpretty.GET, url,
-                               body=json.dumps(lookup.DATA))
-        code, data = stocks.lookup_resource(symbol)
-        self.assertTrue(code)
-        self.assertEqual(data, lookup.DATA)
+    @mock.patch("pandas_datareader.data.DataReader")
+    def test_historical(self, mock_datareader):
+        start = datetime(2017, 5, 8)
+        end = datetime(2017, 5, 12)
+        instance = mock_datareader.return_value
 
-    @httpretty.activate
-    def test_quote(self):
-        symbol = "xyz"
-        url = "%sjson?symbol=%s" % (urls.STOCK_QUOTE_URL, symbol)
-        httpretty.register_uri(httpretty.GET, url,
-                               body=json.dumps(quote.DATA))
-        code, data = stocks.current_quote(symbol)
-        self.assertTrue(code)
-        self.assertEqual(data, quote.DATA)
+        symbol = utils.random_string()
 
-    @httpretty.activate
-    def test_historical(self):
-        data = {
-            'Normalized' : False,
-            'DataPeriod' : 'Day',
-            'Elements' : [
-                {
-                    'Symbol' : 'XYZ',
-                    'Type' : 'price',
-                    'Params' : ['c'],
-                },
-            ],
-            'NumberOfDays' : 10,
-        }
-        url = "%sjson?parameters=%s" % (urls.STOCK_HISTORICAL_URL, json.dumps(data))
-        httpretty.register_uri(httpretty.GET, url,
-                               body=json.dumps(historical.DATA))
-        code, data = stocks.historical_data(False, 'Day', ['xyz'], 'price', 'c', number_of_days=10)
-        self.assertTrue(code)
-        test_data = historical.DATA
-        test_data.pop("Positions", None)
-        test_data.pop("Labels", None)
-        self.assertEqual(data, test_data)
 
-    @httpretty.activate
-    def test_historical_fail(self):
-        data = {
-            'Normalized' : False,
-            'DataPeriod' : 'Day',
-            'Elements' : [
-                {
-                    'Symbol' : 'XYZ',
-                    'Type' : 'price',
-                    'Params' : ['c'],
-                },
-            ],
-            'NumberOfDays' : 10,
-        }
-        url = "%sjson?parameters=%s" % (urls.STOCK_HISTORICAL_URL, json.dumps(data))
-        httpretty.register_uri(httpretty.GET, url,
-                               body=json.dumps(historical_fail.DATA))
-        code, data = stocks.historical_data(False, 'Day', ['xyz'], 'price', 'c', number_of_days=10)
-        self.assertFalse(code)
+        fake_values = []
+        for _ in range(10):
+            high = random.uniform(2.5, 10.2)
+            low = random.uniform(1.7, 22.4)
+            openy = random.uniform(22.1, 92.7)
+            close = random.uniform(102.3, 107.4)
+            volume = random.randint(0, 100)
+            date = utils.random_date(datetime(2014, 1, 1), datetime(2015, 1, 1))
+            fake_values.append((utils.PandasDatetimeMock(date.strftime('%Y-%m-%d')),
+                                utils.PandaStockMock(high, low, openy, close, volume)))
+        instance.iterrows.return_value = fake_values
+        data = stocks.historical_data(symbol, start, end)[-1]
+        self.assertEqual(data['high'], high)
+        self.assertEqual(data['low'], low)
+        self.assertEqual(data['close'], close)
+        self.assertEqual(data['open'], openy)
+        self.assertEqual(data['volume'], volume)
+        self.assertEqual(data['datetime'].strftime('%Y-%m-%d'), date.strftime('%Y-%m-%d'))
