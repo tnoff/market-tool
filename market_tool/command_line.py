@@ -19,6 +19,8 @@ def parse_args():
     db_update.add_argument("end_date",
                            help="End date in YYYY-MM-DD format")
     db_update.add_argument("stock_symbols", nargs="+", help="Stock symbols")
+    db_update.add_argument('--number-decimals', type=int, default=2,
+                           help="Number of digits to use for stock prices")
     return vars(p.parse_args())
 
 def database_update(args):
@@ -26,7 +28,8 @@ def database_update(args):
     print 'Updating'
     start_date = datetime.strptime(args['start_date'], DATETIME_INPUT_FORMAT)
     end_date = datetime.strptime(args['end_date'], DATETIME_INPUT_FORMAT)
-    db.stock_update(args['stock_symbols'], start_date, end_date)
+    db.stock_update(args['stock_symbols'], start_date, end_date,
+                    number_decimals=args['number_decimals'])
     print 'Done updating'
 
 COMMAND_DICT = {

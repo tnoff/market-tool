@@ -3,13 +3,14 @@ from datetime import datetime
 import pandas_datareader.data
 
 from market_tool.exceptions import MarketToolException
+from market_tool import utils
 
 COLUMNS = ["High", "Close", "Open", "Low", "Volume"]
 
 INPUT_DATETIME_FORMAT = "%Y-%m-%d 00:00:00"
 OUTPUT_DATETIME_FORMAT = "%Y-%m-%d"
 
-def historical_data(stock_symbol, start_date, end_date, source="google"):
+def historical_data(stock_symbol, start_date, end_date, source="google", number_decimals=2):
     '''
     Use pandas to get stock/etf stock price information
 
@@ -39,6 +40,7 @@ def historical_data(stock_symbol, start_date, end_date, source="google"):
             'datetime' : time.to_pydatetime(),
         }
         for column in COLUMNS:
-            dict_data[column.lower()] = getattr(row_data, column)
+            value = utils.round_decimal(getattr(row_data, column), number_decimals)
+            dict_data[column.lower()] = value
         return_data.append(dict_data)
     return return_data

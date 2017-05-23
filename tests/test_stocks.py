@@ -4,8 +4,8 @@ import unittest
 
 import mock
 
-from market_tool import stocks
-from tests import utils
+from market_tool import stocks, utils
+from tests import utils as test_utils
 
 
 class TestStocks(unittest.TestCase):
@@ -15,8 +15,8 @@ class TestStocks(unittest.TestCase):
         end = datetime(2017, 5, 12)
         instance = mock_datareader.return_value
 
-        symbol = utils.random_string()
-
+        symbol = test_utils.random_string()
+        number_decimals = random.randint(0, 5)
 
         fake_values = []
         for _ in range(10):
@@ -25,14 +25,18 @@ class TestStocks(unittest.TestCase):
             openy = random.uniform(22.1, 92.7)
             close = random.uniform(102.3, 107.4)
             volume = random.randint(0, 100)
-            date = utils.random_date(datetime(2014, 1, 1), datetime(2015, 1, 1))
-            fake_values.append((utils.PandasDatetimeMock(date.strftime('%Y-%m-%d')),
-                                utils.PandaStockMock(high, low, openy, close, volume)))
+            date = test_utils.random_date(datetime(2014, 1, 1), datetime(2015, 1, 1))
+            fake_values.append((test_utils.PandasDatetimeMock(date.strftime('%Y-%m-%d')),
+                                test_utils.PandaStockMock(high, low, openy, close, volume)))
         instance.iterrows.return_value = fake_values
-        data = stocks.historical_data(symbol, start, end)[-1]
-        self.assertEqual(data['high'], high)
-        self.assertEqual(data['low'], low)
-        self.assertEqual(data['close'], close)
-        self.assertEqual(data['open'], openy)
+        data = stocks.historical_data(symbol, start, end, number_decimals=number_decimals)[-1]
+        self.assertEqual(data['high'],
+                         utils.round_decimal(high, number_decimals))
+        self.assertEqual(data['low'],
+                         utils.round_decimal(low, number_decimals))
+        self.assertEqual(data['close'],
+                         utils.round_decimal(close, number_decimals))
+        self.assertEqual(data['open'],
+                         utils.round_decimal(openy, number_decimals))
         self.assertEqual(data['volume'], volume)
         self.assertEqual(data['datetime'].strftime('%Y-%m-%d'), date.strftime('%Y-%m-%d'))

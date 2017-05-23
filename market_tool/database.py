@@ -122,19 +122,21 @@ class StockDatabase(object):
             self.db_session.commit()
         return stock.id
 
-    def stock_update(self, stock_symbols, start_date, end_date):
+    def stock_update(self, stock_symbols, start_date, end_date, number_decimals=2):
         '''
         Update stock information in database for given stock symbols within date range
         stock_symbols       :       Single stock symbol or list of stock symbols
         start_date          :       Start date of stock information
         end_date            :       End date of stock information
+        number_decimals     :       Number of decimals to use with stock prices
         '''
         if not isinstance(stock_symbols, list):
             stock_symbols = [stock_symbols]
 
         for stock in stock_symbols:
             stock_id = self.__ensure_stock(stock)
-            hist_data = stocks.historical_data(stock, start_date, end_date)
+            hist_data = stocks.historical_data(stock, start_date, end_date,
+                                               number_decimals=number_decimals)
             for data_set in hist_data:
                 stock_args = {
                     'stock_id' : stock_id,
