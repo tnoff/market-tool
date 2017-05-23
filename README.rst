@@ -4,9 +4,10 @@ Stock Tools
 
 Tools for acquiring and analyzing stock information.
 
-
 =====
 TODOS
 =====
 
-- Support more than sqlite for database, data will be very large
+- Add support for matplotlib and graphs
+- Add support for basic mathmatic operations on datasets
+- Add support for logging
