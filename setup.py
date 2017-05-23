@@ -14,6 +14,7 @@ setuptools.setup(
     ],
     entry_points={
         'console_scripts' : [
+            'market-tool = market_tool.command_line:main',
         ],
     },
     packages=setuptools.find_packages(exclude=['tests']),
