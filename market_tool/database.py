@@ -9,44 +9,10 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
 from market_tool import stocks
+from market_tool.schema import DATABASE_SCHEMA
 
 DATETIME_INPUT_FORMAT = '%Y-%m-%d'
 DATETIME_OUTPUT_FORMAT = '%Y-%m-%d'
-
-DATABASE_SCHEMA = {
-    'type' : 'object',
-    'properties' : {
-        'connection_type' : {
-            'type' : 'string',
-        },
-        'database_file' : {
-            'type' : ['string', 'null'],
-        },
-        'username' : {
-            'type' : ['string', 'null'],
-        },
-        'password' : {
-            'type' : ['string', 'null'],
-        },
-        'host' : {
-            'type' : ['string', 'null'],
-        },
-        'database_name' : {
-            'type' : ['string', 'null'],
-        },
-    },
-    'required' : ['connection_type'],
-    'oneOf' : [
-        {
-            'required' : ['database_file'],
-        },
-        {
-            'required' : ['username', 'password',
-                          'host', 'database_name'],
-        },
-    ],
-}
-
 
 # Set up tables for database
 BASE = declarative_base()
@@ -98,16 +64,16 @@ class StockDatabase(object):
         '''
         validate(database_dict, DATABASE_SCHEMA)
 
-        if database_dict['connection_type'] == 'sqlite':
-            if database_dict['database_file'] is None:
+        if database_dict.has_key('sqlite'):
+            if database_dict['sqlite']['database_file'] is None:
                 engine = create_engine('sqlite:///', encoding='utf-8')
             else:
-                engine = create_engine('sqlite:///%s' % database_dict['database_file'], encoding='utf-8')
-        elif database_dict['connection_type'] == 'mysql':
-            engine = create_engine('mysql+pymysql://%s:%s@%s/%s' % (database_dict['username'],
-                                                                    database_dict['password'],
-                                                                    database_dict['host'],
-                                                                    database_dict['database_name'],))
+                engine = create_engine('sqlite:///%s' % database_dict['sqlite']['database_file'], encoding='utf-8')
+        elif database_dict.has_key('mysql'):
+            engine = create_engine('mysql+pymysql://%s:%s@%s/%s' % (database_dict['mysql']['username'],
+                                                                    database_dict['mysql']['password'],
+                                                                    database_dict['mysql']['host'],
+                                                                    database_dict['mysql']['database_name'],))
 
         BASE.metadata.create_all(engine)
         BASE.metadata.bind = engine

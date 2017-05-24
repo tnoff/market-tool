@@ -19,13 +19,13 @@ class TestStocks(unittest.TestCase):
         number_decimals = random.randint(0, 5)
 
         fake_values = []
-        for _ in range(10):
+        for count in range(1, 11):
             high = random.uniform(2.5, 10.2)
             low = random.uniform(1.7, 22.4)
             openy = random.uniform(22.1, 92.7)
             close = random.uniform(102.3, 107.4)
             volume = random.randint(0, 100)
-            date = test_utils.random_date(datetime(2014, 1, 1), datetime(2015, 1, 1))
+            date = datetime(2014, 1, count)
             fake_values.append((test_utils.PandasDatetimeMock(date.strftime('%Y-%m-%d')),
                                 test_utils.PandaStockMock(high, low, openy, close, volume)))
         instance.iterrows.return_value = fake_values

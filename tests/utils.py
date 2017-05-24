@@ -8,13 +8,6 @@ def random_string(prefix='', suffix='', length=10):
     s = ''.join(random.choice(letters) for _ in range(length))
     return '%s%s%s' % (prefix, s, suffix)
 
-def random_date(start, end):
-    start_epoch = int(start.strftime('%s'))
-    end_epoch = int(end.strftime('%s'))
-    random_epoch = random.randint(start_epoch, end_epoch)
-    return datetime.datetime.fromtimestamp(random_epoch)
-
-
 class PandaStockMock(object):
     def __init__(self, high, low, openy, close, volume):
         self.High = high
