@@ -7,9 +7,6 @@ from market_tool import utils
 
 COLUMNS = ["High", "Close", "Open", "Low", "Volume"]
 
-INPUT_DATETIME_FORMAT = "%Y-%m-%d 00:00:00"
-OUTPUT_DATETIME_FORMAT = "%Y-%m-%d"
-
 def historical_data(stock_symbol, start_date, end_date, source="google", number_decimals=2):
     '''
     Use pandas to get stock/etf stock price information
@@ -31,7 +28,7 @@ def historical_data(stock_symbol, start_date, end_date, source="google", number_
 
     try:
         data = pandas_datareader.data.DataReader(stock_symbol.lower(), source, start_date, end_date)
-    except pandas_datareader._utils.RemoteDataError:
+    except pandas_datareader._utils.RemoteDataError: #pylint:disable=protected-access
         return []
 
     return_data = []

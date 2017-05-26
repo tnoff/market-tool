@@ -8,11 +8,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
-from market_tool import stocks
+from market_tool import settings, stocks
 from market_tool.schema import DATABASE_SCHEMA
-
-DATETIME_INPUT_FORMAT = '%Y-%m-%d'
-DATETIME_OUTPUT_FORMAT = '%Y-%m-%d'
 
 # Set up tables for database
 BASE = declarative_base()
@@ -138,9 +135,10 @@ class StockDatabase(object):
         query = query.order_by(desc(StockPrice.date))
         stock_list = []
         for stock_price, stock in query:
-            stock_data = stock_price.as_dict(DATETIME_OUTPUT_FORMAT)
+            stock_data = stock_price.as_dict(settings.DATETIME_DATABASE_OUTPUT_FORMAT)
             stock_data.pop('id')
             stock_data.pop('stock_id')
-            stock_data['stock_symbol'] = stock.as_dict(DATETIME_OUTPUT_FORMAT).pop('stock_symbol')
+            stock_data['stock_symbol'] = stock.as_dict(settings.DATETIME_DATABASE_OUTPUT_FORMAT).\
+                                         pop('stock_symbol')
             stock_list.append(stock_data)
         return stock_list
