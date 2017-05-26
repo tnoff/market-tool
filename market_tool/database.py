@@ -1,6 +1,7 @@
 import datetime
 
 from jsonschema import validate
+from scipy import stats
 from sqlalchemy import create_engine
 from sqlalchemy import desc
 from sqlalchemy import Column, Date, Float, ForeignKey, Integer, String, UniqueConstraint
@@ -142,3 +143,39 @@ class StockDatabase(object):
                                          pop('stock_symbol')
             stock_list.append(stock_data)
         return stock_list
+
+    def stock_coefficient_determination(self, start_date=None, end_date=None):
+        '''
+        Get list of stocks in order of highest coefficient of determination
+        start_date          :       Start date of stock information
+        end_date            :       End date of stock information
+        '''
+        stock_info = []
+        stock_query = self.db_session.query(Stock).all()
+        for stock in stock_query:
+            query = self.db_session.query(StockPrice).\
+                    filter(StockPrice.stock_id == stock.id)
+            if start_date is not None:
+                query = query.filter(StockPrice.date >= start_date)
+            if end_date is not None:
+                query = query.filter(StockPrice.date <= end_date)
+            query = query.order_by(desc(StockPrice.date))
+
+            x_values = []
+            y_values = []
+            for (count, price) in enumerate(query):
+                x_values.append(count)
+                y_values.append(price.price_close)
+            if x_values == []:
+                continue
+            slope, intercept, r_value, p_value, std_err = stats.linregress(x_values, y_values)
+            stock_info.append({
+                'slope' : slope,
+                'intercept' : intercept,
+                'r_value' : r_value,
+                'p_value' : p_value,
+                'std_err' : std_err,
+                'r_squared' : r_value ** 2,
+                'stock' : str(stock.stock_symbol),
+            })
+        return sorted(stock_info, key=lambda k: k['r_squared'])
