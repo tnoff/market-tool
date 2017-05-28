@@ -181,4 +181,4 @@ class StockDatabase(object):
                 'r_squared' : r_value ** 2,
                 'stock' : str(stock.stock_symbol),
             })
-        return sorted(stock_info, key=lambda k: k['r_squared'])
+        return sorted(stock_info, key=lambda k: k['r_squared'])[::-1]
