@@ -21,6 +21,8 @@ def parse_args():
     db_update.add_argument("stock_symbols", nargs="+", help="Stock symbols")
     db_update.add_argument('--number-decimals', type=int, default=2,
                            help="Number of digits to use for stock prices")
+    db_update.add_argument('--source', choices=["google", "yahoo"], default="google",
+                           help="Source for financial info")
 
     coeff = sub.add_parser("coefficient", help="Get coefficient data")
     coeff.add_argument("database_schema", type=json.loads,
@@ -38,7 +40,8 @@ def database_update(args):
     start_date = datetime.strptime(args['start_date'], DATETIME_INPUT_FORMAT)
     end_date = datetime.strptime(args['end_date'], DATETIME_INPUT_FORMAT)
     db.stock_update(args['stock_symbols'], start_date, end_date,
-                    number_decimals=args['number_decimals'])
+                    number_decimals=args['number_decimals'],
+                    source=args['source'])
     print 'Done updating'
 
 def coefficient(args):
