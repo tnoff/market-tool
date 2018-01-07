@@ -9,6 +9,7 @@ setuptools.setup(
         'jsonschema >= 2.6.0',
         'pandas == 0.19.2',
         'pandas-datareader >= 0.3.0',
+        'psycopg2 >= 2.7.3.2',
         'PyMySQL >= 0.7.11',
         'scipy >= 0.19.0',
         'SQLAlchemy >= 1.1.9',
@@ -19,5 +20,5 @@ setuptools.setup(
         ],
     },
     packages=setuptools.find_packages(exclude=['tests']),
-    version='0.0.5',
+    version='0.0.6',
 )

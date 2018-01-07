@@ -72,6 +72,13 @@ class StockDatabase(object):
                                                                     database_dict['mysql']['password'],
                                                                     database_dict['mysql']['host'],
                                                                     database_dict['mysql']['database_name'],))
+        elif database_dict.has_key('psql'):
+            engine = create_engine('postgres://%s:%s@%s:%s/%s' % (database_dict['psql']['username'],
+                                                                  database_dict['psql']['password'],
+                                                                  database_dict['psql']['host'],
+                                                                  database_dict['psql']['port'],
+                                                                  database_dict['psql']['database_name'],))
+
 
         BASE.metadata.create_all(engine)
         BASE.metadata.bind = engine
