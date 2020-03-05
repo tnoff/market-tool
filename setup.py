@@ -4,7 +4,7 @@ setuptools.setup(
     name='market_tool',
     description='Stock Market Tool',
     author='Tyler D. North',
-    author_email='tylernorth18@gmail.com',
+    author_email='ty_north@yahoo.com',
     install_requires=[
         'jsonschema >= 2.6.0',
         'pandas == 0.19.2',
